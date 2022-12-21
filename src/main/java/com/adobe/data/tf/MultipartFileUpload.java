@@ -6,6 +6,8 @@ import com.azure.storage.blob.implementation.util.ChunkedDownloadUtils;
 import com.azure.storage.blob.models.BlobDownloadAsyncResponse;
 import com.azure.storage.blob.models.BlobProperties;
 import com.azure.storage.blob.models.BlobRange;
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.Trace;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import reactor.core.publisher.Flux;
@@ -31,7 +33,7 @@ public class MultipartFileUpload {
     public static List<FinalUploadResult> testMultiPartUploadToS3(ApplicationInput appInput) {
         BlobAsyncClient azureBlobClient = AzureUtils.getAzureBlobClient(appInput);
         AwsBasicCredentials awsBasicCredentials = AzureUtils.fetchAWSCredentialsFromKeyVault();
-        S3AsyncClient s3AsyncClient = S3Utils.getS3AsyncClient(awsBasicCredentials);
+        S3AsyncClient s3AsyncClient = S3Utils.getS3AsyncClient(awsBasicCredentials, appInput.getUseAcceleratedUpload());
 
         List<FinalUploadResult> finalUploadResults = new ArrayList<>();
         for (int i = 0; i < appInput.getIterationCount(); i++) {
@@ -39,7 +41,13 @@ public class MultipartFileUpload {
         }
         return finalUploadResults;
     }
+
+
+    @Trace(dispatcher = true)
     private static FinalUploadResult doMultiPartUpload(BlobAsyncClient azureBlobClient, S3AsyncClient s3AsyncClient, ApplicationInput appInput) {
+        NewRelic.setTransactionName("App", "NewUploadV1");
+        NewRelicUtils.fillParamsFromApplicationInput(appInput);
+
         String s3Bucket = appInput.getS3Bucket();
         String formattedPath = generatePrefixForS3Key();
         String s3PrefixKey = appInput.getS3PrefixKey() +"/"+ formattedPath +"/"+appInput.getBlobName();
@@ -53,6 +61,9 @@ public class MultipartFileUpload {
                 .log()
                 .block();
         log.info("done uploading on s3 {}", s3PrefixKey);
+
+        NewRelic.addCustomParameter("s3_upload_path", s3PrefixKey);
+        NewRelicUtils.fillParamsFromUploadResult(finalUploadResult);
         return finalUploadResult;
     }
 

@@ -11,7 +11,7 @@ import java.util.List;
 @Slf4j
 public class MainApplication {
 
-    public static void main(String[] args) throws JsonProcessingException {
+    public static void main(String[] args) throws JsonProcessingException, InterruptedException {
         ApplicationInput applicationInput = CommandLineParserUtil.parseCommandLineArguments(args);
         log.info("user input {}", applicationInput);
         long start = System.currentTimeMillis();
@@ -22,5 +22,10 @@ public class MainApplication {
         log.info("outputting result");
         log.info("..........................................");
         System.out.println(new ObjectMapper().writeValueAsString(result));
+
+        // hack so that newrelic gets enough time to transfer data
+        log.info("Sleeping for 5 sec before termination");
+        Thread.sleep(5000);
+        log.info("Good Bye !!");
     }
 }

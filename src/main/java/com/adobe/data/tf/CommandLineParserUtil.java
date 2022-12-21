@@ -15,6 +15,7 @@ public class CommandLineParserUtil {
         options.addOption(getChunkSizeOption());
         options.addOption(getBlobUrlOption());
         options.addOption(getS3UrlOption());
+        options.addOption(getAcceleratedUpload());
         // parse
         HelpFormatter formatter = new HelpFormatter();
 
@@ -47,6 +48,7 @@ public class CommandLineParserUtil {
                 .s3PrefixKey(prefixKey)
                 .iterationCount(getInterationCount(cmd))
                 .chunkSizeInMB(getChunkSizeInMB(cmd))
+                .useAcceleratedUpload(isAcceleratedUploadOption(cmd))
                 .build();
     }
 
@@ -68,6 +70,23 @@ public class CommandLineParserUtil {
         } else {
             return Integer.parseInt(iteration);
         }
+    }
+
+
+    private static Boolean isAcceleratedUploadOption(CommandLine cmd) {
+        String accUpload = cmd.getOptionValue("accelerated-upload");
+        if (accUpload == null) {
+            // default true
+            return true;
+        } else {
+            return Boolean.parseBoolean(accUpload);
+        }
+    }
+
+    private static Option getAcceleratedUpload() {
+        Option option = new Option("a", "accelerated-upload", true, "Should use Accelerated upload for S3");
+        option.setRequired(false);
+        return option;
     }
 
     private static Option getChunkSizeOption() {
@@ -98,4 +117,5 @@ public class CommandLineParserUtil {
     private static String getS3Url(CommandLine cmd) {
         return cmd.getOptionValue("s3-url");
     }
+
 }

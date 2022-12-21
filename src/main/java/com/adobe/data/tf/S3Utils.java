@@ -13,16 +13,15 @@ import software.amazon.awssdk.services.s3.internal.crt.S3CrtAsyncHttpClient;
 import software.amazon.awssdk.services.s3.internal.crt.S3NativeClientConfiguration;
 
 public class S3Utils {
-    public static S3AsyncClient getS3AsyncClient(AwsBasicCredentials awsBasicCredentials) {
+    public static S3AsyncClient getS3AsyncClient(AwsBasicCredentials awsBasicCredentials, boolean acceleratedUpload) {
         //ClientAsyncConfiguration.builder().advancedOption()
         HttpClient build1 = new NettyAsyncHttpClientBuilder().
                 build();
-        S3AsyncClient build = S3AsyncClient.builder()
+        return S3AsyncClient.builder()
                 .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
-                .accelerate(true)
+                .accelerate(acceleratedUpload)
                 .region(Region.US_EAST_1)
                 .httpClientBuilder(NettyNioAsyncHttpClient.builder().maxConcurrency(500))
                 .build();
-        return build;
     }
 }

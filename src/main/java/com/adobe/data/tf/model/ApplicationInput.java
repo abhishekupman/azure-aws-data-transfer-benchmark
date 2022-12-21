@@ -8,11 +8,12 @@ import lombok.Value;
 @Builder
 @ToString
 public class ApplicationInput {
-    private final String storageAccount;
-    private final String containerName;
-    private final String blobName;
-    private final String s3Bucket;
-    private final String s3PrefixKey;
-    private final Integer iterationCount;
-    private final Integer chunkSizeInMB;
+    String storageAccount;
+    String containerName;
+    String blobName;
+    String s3Bucket;
+    String s3PrefixKey;
+    Integer iterationCount;
+    Integer chunkSizeInMB;
+    Boolean useAcceleratedUpload;
 }
